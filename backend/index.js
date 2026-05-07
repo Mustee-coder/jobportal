@@ -19,12 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // CORS (dev setup)
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true
-  })
-);
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
 
 //  ROUTES 
 app.use("/api/v1/user", userRoute);
