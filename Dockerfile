@@ -54,4 +54,5 @@ EXPOSE 3001
 
 USER node
 
-CMD ["node", "server.js"]
+
+CMD ["npm", "start"]
