@@ -1,6 +1,6 @@
-# ---------------------------
+# =========================
 # Stage 1: Build Frontend (Vite)
-# ---------------------------
+# =========================
 FROM node:22-bookworm-slim AS frontend-build
 
 WORKDIR /app/frontend
@@ -8,36 +8,29 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY frontend/ ./
-
-ARG VITE_CLERK_PUBLISHABLE_KEY
-ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
+COPY frontend/ .
 
 ENV VITE_API_URL=
 
 RUN npm run build
 
 
-# ---------------------------
-# Stage 2: Build Backend (Express / TypeScript)
-# ---------------------------
-FROM node:22-bookworm-slim AS backend-build
+# =========================
+# Stage 2: Backend (Express JS - NO BUILD STEP)
+# =========================
+FROM node:22-bookworm-slim AS backend
 
-WORKDIR /app
+WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN npm ci --no-audit --no-fund
+RUN npm ci --omit=dev --no-audit --no-fund
 
 COPY backend/ .
 
-ENV NODE_ENV=production
 
-RUN npm run build
-
-
-# ---------------------------
-# Stage 3: Runtime Image
-# ---------------------------
+# =========================
+# Stage 3: Production Runner
+# =========================
 FROM node:22-bookworm-slim AS runner
 
 WORKDIR /app
@@ -45,18 +38,20 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3001
 
-# install production deps only
+# install backend production deps
 COPY backend/package*.json ./
-RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
+RUN npm ci --omit=dev --no-audit --no-fund
 
-# backend build output
-COPY --from=backend-build /app/dist ./dist
+# backend source
+COPY --from=backend /app/backend ./backend
 
 # frontend build output
 COPY --from=frontend-build /app/frontend/dist ./public
+
+WORKDIR /app/backend
 
 EXPOSE 3001
 
 USER node
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "server.js"]
