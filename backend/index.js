@@ -42,7 +42,8 @@ app.use("/api/v1/application", applicationRoute);
 /* -------------------- SERVE FRONTEND (VITE BUILD) -------------------- */
 app.use(express.static(path.join(__dirname, "../public")));
 
-app.get("*", (req, res) => {
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/api")) return next();
   res.sendFile(path.join(__dirname, "../public/index.html"));
 });
 
