@@ -55,13 +55,10 @@ server/
 - Protected Routes
 - Role-based Access Control (Admin, Employer, Job Seeker)
 
-## 📸 Screenshots
 
-_Ad
 
 ## 🌐 Live Demo
-
-Coming Soon
+https://jobportal-brown-five.vercel.app
 
 ## 👨‍💻 Author
 
