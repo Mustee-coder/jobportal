@@ -12,13 +12,15 @@ const Home = () => {
   useGetAllJobs();
   const { user } = useSelector(store => store.auth);
   const navigate = useNavigate();
+
   useEffect(() => {
     if (user?.role === 'recruiter') {
       navigate("/admin/companies");
     }
-  }, []);
+  }, [user, navigate]);
+
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-x-hidden">
       <Navbar />
       <HeroSection />
       <CategoryCarousel />

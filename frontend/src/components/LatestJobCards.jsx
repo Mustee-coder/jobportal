@@ -1,54 +1,153 @@
 import React from 'react'
-import { Badge } from './ui/badge'
+import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { MapPin, Briefcase, DollarSign, Bookmark, Heart } from 'lucide-react'
+import { useState } from 'react'
 
 const LatestJobCards = ({ job }) => {
     const navigate = useNavigate();
+    const [isSaved, setIsSaved] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5 },
+        },
+        hover: {
+            y: -8,
+            transition: { duration: 0.3 },
+        },
+    };
+
+    const handleJobClick = () => {
+        navigate(`/description/${job?._id}`);
+    };
 
     return (
-        <div
-            onClick={() => navigate(`/description/${job._id}`)}
-            className='p-4 md:p-5 rounded-lg shadow-md bg-white border border-gray-100 cursor-pointer 
-            hover:shadow-xl transition-all duration-200 active:scale-[0.98]'
+        <motion.div
+            variants={cardVariants}
+            whileHover="hover"
+            className="group relative h-full"
         >
+            {/* Gradient background on hover */}
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
 
-            {/* Company */}
-            <div>
-                <h1 className='font-medium text-base md:text-lg'>
-                    {job?.company?.name}
-                </h1>
-                <p className='text-xs md:text-sm text-gray-500'>
-                    India
-                </p>
+            {/* Card */}
+            <div className="relative backdrop-blur-xl bg-white/5 border border-white/10 hover:border-indigo-500/30 rounded-2xl p-6 h-full transition-all duration-300 group-hover:bg-white/10 flex flex-col cursor-pointer">
+
+                {/* Header with save button */}
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                        <h3 className="text-lg font-bold text-slate-100 group-hover:text-indigo-300 transition-colors mb-1">
+                            {job?.title}
+                        </h3>
+                        <p className="text-sm text-slate-400">
+                            {job?.company?.name}
+                        </p>
+                    </div>
+
+                    {/* Save button */}
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setIsSaved(!isSaved)}
+                        className={`p-2 rounded-lg transition-all flex-shrink-0 ${
+                            isSaved
+                                ? 'bg-indigo-500/30 text-indigo-400'
+                                : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-indigo-400'
+                        }`}
+                    >
+                        <Bookmark size={18} fill={isSaved ? 'currentColor' : 'none'} />
+                    </motion.button>
+                </div>
+
+                {/* Job Details Grid */}
+                <div className="space-y-2 mb-6">
+                    {/* Location */}
+                    {job?.location && (
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <MapPin size={16} className="text-indigo-400 flex-shrink-0" />
+                            <span className="truncate">{job.location}</span>
+                        </div>
+                    )}
+
+                    {/* Job Type */}
+                    {job?.jobType && (
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <Briefcase size={16} className="text-indigo-400 flex-shrink-0" />
+                            <span>{job.jobType}</span>
+                        </div>
+                    )}
+
+                    {/* Salary */}
+                    {job?.salary && (
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                            <DollarSign size={16} className="text-indigo-400 flex-shrink-0" />
+                            <span>{job.salary}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Description */}
+                {job?.description && (
+                    <p className="text-sm text-slate-400 mb-6 line-clamp-2 flex-1">
+                        {job.description}
+                    </p>
+                )}
+
+                {/* Skills tags */}
+                {job?.requirements && job.requirements.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-6">
+                        {job.requirements.slice(0, 3).map((req, idx) => (
+                            <motion.span
+                                key={idx}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: idx * 0.05 }}
+                                className="text-xs px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 transition-colors"
+                            >
+                                {req}
+                            </motion.span>
+                        ))}
+                        {job.requirements.length > 3 && (
+                            <span className="text-xs px-3 py-1 text-slate-400">
+                                +{job.requirements.length - 3} more
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t border-white/10">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setIsLiked(!isLiked)}
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            isLiked
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-red-400'
+                        }`}
+                    >
+                        <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
+                        <span className="hidden sm:inline">Like</span>
+                    </motion.button>
+
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleJobClick}
+                        className="flex-1 px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all flex items-center justify-center gap-2 group/btn"
+                    >
+                        View Details
+                        <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                    </motion.button>
+                </div>
             </div>
-
-            {/* Title + Description */}
-            <div className='mt-2'>
-                <h1 className='font-bold text-base md:text-lg my-1'>
-                    {job?.title}
-                </h1>
-
-                <p className='text-xs md:text-sm text-gray-600 line-clamp-2'>
-                    {job?.description}
-                </p>
-            </div>
-
-            {/* Badges */}
-            <div className='flex flex-wrap gap-2 mt-4'>
-                <Badge className='text-blue-700 font-bold' variant="ghost">
-                    {job?.position} Positions
-                </Badge>
-
-                <Badge className='text-[#F83002] font-bold' variant="ghost">
-                    {job?.jobType}
-                </Badge>
-
-                <Badge className='text-[#7209b7] font-bold' variant="ghost">
-                    ${job?.salary} 
-                </Badge>
-            </div>
-
-        </div>
+        </motion.div>
     )
 }
 

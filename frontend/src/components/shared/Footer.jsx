@@ -1,106 +1,261 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Facebook, Twitter, Linkedin, Mail } from "lucide-react";
 
-const Footer = () => {
+const PremiumFooter = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  const socialLinks = [
+    {
+      icon: Facebook,
+      href: "#",
+      label: "Facebook",
+      color: "hover:text-blue-400",
+    },
+    {
+      icon: Twitter,
+      href: "#",
+      label: "Twitter",
+      color: "hover:text-sky-400",
+    },
+    {
+      icon: Linkedin,
+      href: "#",
+      label: "LinkedIn",
+      color: "hover:text-indigo-400",
+    },
+    {
+      icon: Mail,
+      href: "#",
+      label: "Email",
+      color: "hover:text-purple-400",
+    },
+  ];
+
+  const quickLinks = [
+    { label: "Browse Jobs", href: "/" },
+    { label: "Companies", href: "/" },
+    { label: "Post a Job", href: "/" },
+    { label: "Career Tips", href: "/" },
+  ];
+
+  const footerLinks = [
+    { label: "Privacy Policy", href: "/" },
+    { label: "Terms", href: "/" },
+    { label: "Contact", href: "/" },
+  ];
+
   return (
-    <footer className="bg-gray-50 border-t mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        
-        {/* TOP SECTION */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+    <footer className="backdrop-blur-xl bg-gradient-to-b from-slate-900/80 via-slate-950/80 to-slate-950/80 border-t border-white/10 mt-16 relative">
+      {/* Animated background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+      </div>
 
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* TOP SECTION */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
           {/* BRAND */}
-          <div>
+          <motion.div variants={itemVariants}>
             <h2 className="text-2xl font-bold">
-              Job<span className="text-[#F83002]">Portal</span>
+              <span className="text-slate-100">Job</span>
+              <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+                Portal
+              </span>
             </h2>
 
-            <p className="text-sm text-gray-600 mt-4 leading-relaxed max-w-sm">
+            <p className="text-sm text-slate-400 mt-4 leading-relaxed max-w-sm">
               Find global opportunities, connect with top companies,
-              and build your career faster.
+              and build your career faster with JobPortal.
             </p>
-          </div>
+
+            {/* Social Icons */}
+            <div className="flex gap-3 mt-6">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <motion.a
+                    key={social.label}
+                    href={social.href}
+                    aria-label={social.label}
+                    whileHover={{ scale: 1.2, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`p-2 rounded-lg bg-white/5 border border-white/10 text-slate-400 transition-colors ${social.color}`}
+                  >
+                    <Icon size={18} />
+                  </motion.a>
+                );
+              })}
+            </div>
+          </motion.div>
 
           {/* QUICK LINKS */}
-          <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
+          <motion.div variants={itemVariants}>
+            <h3 className="font-semibold text-slate-100 mb-4 text-lg">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {quickLinks.map((link) => (
+                <li key={link.label}>
+                  <Link
+                    to={link.href}
+                    className="text-sm text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-0 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 group-hover:w-3 transition-all duration-300"></span>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* COMPANY */}
+          <motion.div variants={itemVariants}>
+            <h3 className="font-semibold text-slate-100 mb-4 text-lg">
+              Company
+            </h3>
+            <ul className="space-y-3">
               <li>
-                <Link to="/" className="hover:text-black transition">
-                  Browse Jobs
+                <Link
+                  to="/"
+                  className="text-sm text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2 group"
+                >
+                  <span className="w-0 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 group-hover:w-3 transition-all duration-300"></span>
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link to="/" className="hover:text-black transition">
-                  Companies
+                <Link
+                  to="/"
+                  className="text-sm text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2 group"
+                >
+                  <span className="w-0 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 group-hover:w-3 transition-all duration-300"></span>
+                  Blog
                 </Link>
               </li>
               <li>
-                <Link to="/" className="hover:text-black transition">
-                  Post a Job
+                <Link
+                  to="/"
+                  className="text-sm text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2 group"
+                >
+                  <span className="w-0 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 group-hover:w-3 transition-all duration-300"></span>
+                  Careers
                 </Link>
               </li>
               <li>
-                <Link to="/" className="hover:text-black transition">
-                  Career Tips
+                <Link
+                  to="/"
+                  className="text-sm text-slate-400 hover:text-indigo-400 transition-colors flex items-center gap-2 group"
+                >
+                  <span className="w-0 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 group-hover:w-3 transition-all duration-300"></span>
+                  Press
                 </Link>
               </li>
             </ul>
-          </div>
+          </motion.div>
 
-          {/* CONNECT */}
-          <div>
-            <h3 className="font-semibold mb-4">Connect</h3>
+          {/* NEWSLETTER */}
+          <motion.div variants={itemVariants}>
+            <h3 className="font-semibold text-slate-100 mb-4 text-lg">
+              Stay Updated
+            </h3>
 
-            <p className="text-sm text-gray-600 mb-4">
-              Stay updated with new job opportunities.
+            <p className="text-sm text-slate-400 mb-4">
+              Get the latest job opportunities delivered to your inbox.
             </p>
 
-            <div className="flex gap-4">
-              <a href="#" className="hover:scale-110 transition-transform">
-                <svg className="w-5 h-5 text-gray-600 hover:text-black" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M22.676 0H1.324C.593 0 0 .592 0 1.324v21.352C0 23.408.593 24 1.324 24H12.82V14.706H9.692v-3.578h3.128V8.408c0-3.1 1.893-4.787 4.657-4.787 1.325 0 2.463.1 2.794.144v3.238l-1.918.001c-1.503 0-1.794.715-1.794 1.762v2.31h3.587l-.468 3.578h-3.119V24h6.116C23.407 24 24 23.408 24 22.676V1.324C24 .592 23.407 0 22.676 0z"/>
-                </svg>
-              </a>
-
-              <a href="#" className="hover:scale-110 transition-transform">
-                <svg className="w-5 h-5 text-gray-600 hover:text-black" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557a9.835 9.835 0 01-2.828.775..." />
-                </svg>
-              </a>
-
-              <a href="#" className="hover:scale-110 transition-transform">
-                <svg className="w-5 h-5 text-gray-600 hover:text-black" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.447 20.452H16.85v-5.569..." />
-                </svg>
-              </a>
+            <div className="relative group">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-lg transition-all"
+              >
+                <Mail size={16} />
+              </motion.button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
+
+        {/* DIVIDER */}
+        <motion.div
+          className="border-t border-white/10 my-8"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        ></motion.div>
 
         {/* BOTTOM SECTION */}
-        <div className="border-t mt-10 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-          
-          <p className="text-center md:text-left">
-            © {new Date().getFullYear()} JobPortal. All rights reserved.
-          </p>
+        <motion.div
+          className="flex flex-col md:flex-row justify-between items-center gap-6 text-sm"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          <motion.p
+            variants={itemVariants}
+            className="text-center md:text-left text-slate-400"
+          >
+            © {new Date().getFullYear()}{" "}
+            <span className="text-slate-100 font-semibold">JobPortal</span>. All
+            rights reserved. Made with ❤️ by Mustee Digital Labs.
+          </motion.p>
 
-          <div className="flex gap-6">
-            <Link to="/" className="hover:text-black transition">
-              Privacy Policy
-            </Link>
-            <Link to="/" className="hover:text-black transition">
-              Terms
-            </Link>
-            <Link to="/" className="hover:text-black transition">
-              Contact
-            </Link>
-          </div>
-
-        </div>
+          <motion.div
+            variants={containerVariants}
+            className="flex gap-6"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {footerLinks.map((link) => (
+              <motion.div key={link.label} variants={itemVariants}>
+                <Link
+                  to={link.href}
+                  className="text-slate-400 hover:text-indigo-400 transition-colors relative group"
+                >
+                  {link.label}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-400 to-purple-500 group-hover:w-full transition-all duration-300"></span>
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
       </div>
     </footer>
   );
 };
 
-export default Footer;
+export default PremiumFooter;
