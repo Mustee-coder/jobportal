@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 import { useNavigate } from 'react-router-dom';
 
-const PremiumHeroSection = () => {
+const HeroSection = () => {
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -194,4 +194,4 @@ const PremiumHeroSection = () => {
   );
 };
 
-export default PremiumHeroSection;
+export default HeroSection;

@@ -19,7 +19,7 @@ const useGetAppliedJobs = () => {
 
         if (res.data.success) {
           dispatch(
-            setAllAppliedJobs(res.data.application)
+            setAllAppliedJobs(res.data.applications)
           );
         }
 
@@ -32,7 +32,6 @@ const useGetAppliedJobs = () => {
     };
 
     fetchAppliedJobs();
-
   }, [dispatch]);
 };
 
