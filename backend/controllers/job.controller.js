@@ -1,11 +1,15 @@
 import { Job } from "../models/job.model.js";
-import mongoose from "mongoose";
-
+import { Company } from "../models/company.model.js";
+import { Application } from "../models/application.model.js";
 
  //ADMIN: Post a new job
  
 export const postJob = async (req, res) => {
+
   try {
+  console.log("🔥 POST JOB CONTROLLER HIT");
+    console.log("BODY:", req.body);
+    console.log("USER ID:", req.id);
     const {
       title,
       description,
@@ -20,32 +24,51 @@ export const postJob = async (req, res) => {
 
     const userId = req.id;
 
+    // Validate text fields
     if (
       !title?.trim() ||
       !description?.trim() ||
       !requirements?.trim() ||
-      !salary ||
       !location?.trim() ||
       !jobType?.trim() ||
-      !experience?.trim() ||
-      !position?.trim() ||
       !companyId?.trim()
     ) {
       return res.status(400).json({
-        message: "All fields are required.",
+        message: "All text fields are required.",
         success: false,
       });
     }
 
+    // Convert numeric fields
     const parsedSalary = Number(salary);
+    const parsedExperience = Number(experience);
+    const parsedPosition = Number(position);
 
+    // Validate salary
     if (Number.isNaN(parsedSalary) || parsedSalary <= 0) {
       return res.status(400).json({
-        message: "Invalid salary.",
+        message: "Salary must be greater than 0.",
         success: false,
       });
     }
 
+    // Validate experience
+    if (Number.isNaN(parsedExperience) || parsedExperience < 0) {
+      return res.status(400).json({
+        message: "Invalid experience.",
+        success: false,
+      });
+    }
+
+    // Validate position
+    if (Number.isNaN(parsedPosition) || parsedPosition <= 0) {
+      return res.status(400).json({
+        message: "Number of positions must be greater than 0.",
+        success: false,
+      });
+    }
+
+    // Check company
     const company = await Company.findById(companyId);
 
     if (!company) {
@@ -55,18 +78,21 @@ export const postJob = async (req, res) => {
       });
     }
 
+    // Create job
     const job = await Job.create({
       title: title.trim(),
       description: description.trim(),
+
       requirements: requirements
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean),
+
       salary: parsedSalary,
       location: location.trim(),
       jobType: jobType.trim(),
-      experienceLevel: experience.trim(),
-      position: position.trim(),
+      experienceLevel: parsedExperience,
+      position: parsedPosition,
       company: companyId,
       created_by: userId,
     });
@@ -78,15 +104,19 @@ export const postJob = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Post Job Error:", error);
+  console.error("========== CREATE JOB ERROR ==========");
+  console.error(error);
+  console.error("MESSAGE:", error.message);
+  console.error("STACK:", error.stack);
+  console.error("======================================");
 
-    return res.status(500).json({
-      message: "Internal server error.",
-      success: false,
-    });
+  return res.status(500).json({
+    message: error.message || "Internal server error.",
+    success: false,
+  });
+
   }
 };
-
 // STUDENTS: Get all jobs (with search)
  
 export const getAllJobs = async (req, res) => {
