@@ -1,4 +1,5 @@
 import { Job } from "../models/job.model.js";
+import mongoose from "mongoose";
 import { Company } from "../models/company.model.js";
 import { Application } from "../models/application.model.js";
 
@@ -7,9 +8,7 @@ import { Application } from "../models/application.model.js";
 export const postJob = async (req, res) => {
 
   try {
-  console.log("🔥 POST JOB CONTROLLER HIT");
-    console.log("BODY:", req.body);
-    console.log("USER ID:", req.id);
+  
     const {
       title,
       description,
