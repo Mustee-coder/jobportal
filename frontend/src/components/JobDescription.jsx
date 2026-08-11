@@ -7,11 +7,10 @@ import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant'
 import { setSingleJob } from '@/redux/jobSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner'
-import { MapPin, Briefcase, DollarSign, Calendar, Users, CheckCircle, ArrowLeft, Share2 } from 'lucide-react'
+import { MapPin, Briefcase, DollarSign, Calendar, Users, CheckCircle, ArrowLeft, Share2, Loader } from 'lucide-react'
 import Navbar from './shared/Navbar'
 
 const JobDescription = () => {
-    const { singleJob } = useSelector(store => store.job)
     const { user } = useSelector(store => store.auth)
 
     const dispatch = useDispatch()
@@ -19,17 +18,70 @@ const JobDescription = () => {
     const params = useParams()
     const jobId = params.id
 
-    const isInitiallyApplied =
-        singleJob?.applications?.some(
-            app => app.applicant === user?._id
-        ) || false
+    // Local state for job data (don't rely on Redux for single resource)
+    const [job, setJob] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [applying, setApplying] = useState(false)
+    const [isApplied, setIsApplied] = useState(false)
 
-    const [isApplied, setIsApplied] = useState(isInitiallyApplied)
-    const [loading, setLoading] = useState(false)
+    // Fetch job data on mount
+    useEffect(() => {
+        const fetchSingleJob = async () => {
+            if (!jobId) {
+                toast.error("Job ID not found")
+                navigate(-1)
+                return
+            }
+
+            try {
+                setLoading(true)
+
+                const res = await axios.get(
+                    `${JOB_API_END_POINT}/get/${jobId}`,
+                    { withCredentials: true }
+                )
+
+                if (res.data.success && res.data.job) {
+                    const jobData = res.data.job
+
+                    // Set local state
+                    setJob(jobData)
+
+                    // Also dispatch to Redux for consistency
+                    dispatch(setSingleJob(jobData))
+
+                    // Check if user already applied
+                    if (user?._id && jobData.applications) {
+                        const hasApplied = jobData.applications.some(
+                            app => app.applicant === user._id
+                        )
+                        setIsApplied(hasApplied)
+                    }
+                } else {
+                    toast.error("Job not found")
+                    navigate(-1)
+                }
+            } catch (error) {
+                console.error("Error fetching job:", error)
+                toast.error(error?.response?.data?.message || "Failed to load job")
+                navigate(-1)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchSingleJob()
+    }, [jobId, dispatch, user?._id, navigate])
 
     const applyJobHandler = async () => {
+        if (!user) {
+            toast.error("Please login first")
+            return
+        }
+
         try {
-            setLoading(true)
+            setApplying(true)
+
             const res = await axios.get(
                 `${APPLICATION_API_END_POINT}/apply/${jobId}`,
                 { withCredentials: true }
@@ -38,48 +90,37 @@ const JobDescription = () => {
             if (res.data.success) {
                 setIsApplied(true)
 
-                const updated = {
-                    ...singleJob,
-                    applications: [
-                        ...singleJob.applications,
-                        { applicant: user?._id }
-                    ]
+                // Update local state
+                if (job && job.applications) {
+                    setJob({
+                        ...job,
+                        applications: [
+                            ...job.applications,
+                            { applicant: user._id }
+                        ]
+                    })
                 }
 
-                dispatch(setSingleJob(updated))
+                // Also update Redux
+                if (job) {
+                    dispatch(setSingleJob({
+                        ...job,
+                        applications: [
+                            ...job.applications,
+                            { applicant: user._id }
+                        ]
+                    }))
+                }
+
                 toast.success(res.data.message)
             }
         } catch (error) {
+            console.error("Error applying:", error)
             toast.error(error?.response?.data?.message || "Error applying for job")
         } finally {
-            setLoading(false)
+            setApplying(false)
         }
     }
-
-    useEffect(() => {
-        const fetchSingleJob = async () => {
-            try {
-                const res = await axios.get(
-                    `${JOB_API_END_POINT}/get/${jobId}`,
-                    { withCredentials: true }
-                )
-
-                if (res.data.success) {
-                    dispatch(setSingleJob(res.data.job))
-
-                    setIsApplied(
-                        res.data.job.applications.some(
-                            app => app.applicant === user?._id
-                        )
-                    )
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        }
-
-        fetchSingleJob()
-    }, [jobId, dispatch, user?._id])
 
     // Animation variants
     const containerVariants = {
@@ -101,6 +142,50 @@ const JobDescription = () => {
             transition: { duration: 0.6, ease: 'easeOut' },
         },
     };
+
+    // Loading skeleton
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+                <Navbar />
+                <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
+                    <div className="flex items-center justify-center h-[60vh]">
+                        <div className="flex flex-col items-center gap-4">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            >
+                                <Briefcase size={48} className="text-indigo-400" />
+                            </motion.div>
+                            <p className="text-slate-300">Loading job details...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // No job found
+    if (!job) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+                <Navbar />
+                <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
+                    <div className="flex items-center justify-center h-[60vh]">
+                        <div className="text-center">
+                            <p className="text-slate-300 mb-4">Job not found</p>
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition"
+                            >
+                                Go Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -133,35 +218,41 @@ const JobDescription = () => {
 
                         <div className="flex-1">
                             <h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-4">
-                                {singleJob?.title}
+                                {job?.title || "N/A"}
                             </h1>
 
                             <p className="text-lg text-slate-300 mb-6">
-                                {singleJob?.company?.name}
+                                {job?.company?.name || "Unknown Company"}
                             </p>
 
                             {/* Badges */}
                             <div className="flex flex-wrap gap-3">
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    className="px-4 py-2 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 font-semibold text-sm"
-                                >
-                                    {singleJob?.position} Position{singleJob?.position > 1 ? 's' : ''}
-                                </motion.div>
+                                {job?.position && (
+                                    <motion.div
+                                        whileHover={{ scale: 1.05 }}
+                                        className="px-4 py-2 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 font-semibold text-sm"
+                                    >
+                                        {job.position} Position{job.position > 1 ? 's' : ''}
+                                    </motion.div>
+                                )}
 
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    className="px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-semibold text-sm"
-                                >
-                                    {singleJob?.jobType}
-                                </motion.div>
+                                {job?.jobType && (
+                                    <motion.div
+                                        whileHover={{ scale: 1.05 }}
+                                        className="px-4 py-2 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-semibold text-sm"
+                                    >
+                                        {job.jobType}
+                                    </motion.div>
+                                )}
 
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    className="px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 text-green-300 font-semibold text-sm"
-                                >
-                                    ${singleJob?.salary}
-                                </motion.div>
+                                {job?.salary && (
+                                    <motion.div
+                                        whileHover={{ scale: 1.05 }}
+                                        className="px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30 text-green-300 font-semibold text-sm"
+                                    >
+                                        ${job.salary}
+                                    </motion.div>
+                                )}
                             </div>
                         </div>
 
@@ -174,7 +265,7 @@ const JobDescription = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={isApplied ? undefined : applyJobHandler}
-                                disabled={isApplied || loading}
+                                disabled={isApplied || applying}
                                 className={`px-8 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                                     isApplied
                                         ? 'bg-green-500/20 text-green-300 border border-green-500/30 cursor-default'
@@ -186,10 +277,13 @@ const JobDescription = () => {
                                         <CheckCircle size={18} />
                                         Applied
                                     </>
-                                ) : (
+                                ) : applying ? (
                                     <>
-                                        {loading ? 'Applying...' : 'Apply Now'}
+                                        <Loader size={18} className="animate-spin" />
+                                        Applying...
                                     </>
+                                ) : (
+                                    'Apply Now'
                                 )}
                             </motion.button>
 
@@ -220,84 +314,94 @@ const JobDescription = () => {
                     <div className="space-y-6">
 
                         {/* Location */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
-                        >
-                            <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                                <MapPin size={20} className="text-blue-400" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm text-slate-400 mb-1">Location</p>
-                                <p className="text-lg text-slate-100 font-medium">
-                                    {singleJob?.location}
-                                </p>
-                            </div>
-                        </motion.div>
+                        {job?.location && (
+                            <motion.div
+                                variants={itemVariants}
+                                className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
+                            >
+                                <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                    <MapPin size={20} className="text-blue-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm text-slate-400 mb-1">Location</p>
+                                    <p className="text-lg text-slate-100 font-medium">
+                                        {job.location}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Job Type */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
-                        >
-                            <div className="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
-                                <Briefcase size={20} className="text-indigo-400" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm text-slate-400 mb-1">Job Type</p>
-                                <p className="text-lg text-slate-100 font-medium">
-                                    {singleJob?.jobType}
-                                </p>
-                            </div>
-                        </motion.div>
+                        {job?.jobType && (
+                            <motion.div
+                                variants={itemVariants}
+                                className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
+                            >
+                                <div className="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                                    <Briefcase size={20} className="text-indigo-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm text-slate-400 mb-1">Job Type</p>
+                                    <p className="text-lg text-slate-100 font-medium">
+                                        {job.jobType}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Salary */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
-                        >
-                            <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                                <DollarSign size={20} className="text-green-400" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm text-slate-400 mb-1">Salary</p>
-                                <p className="text-lg text-slate-100 font-medium">
-                                    ${singleJob?.salary}
-                                </p>
-                            </div>
-                        </motion.div>
+                        {job?.salary && (
+                            <motion.div
+                                variants={itemVariants}
+                                className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
+                            >
+                                <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                    <DollarSign size={20} className="text-green-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm text-slate-400 mb-1">Salary</p>
+                                    <p className="text-lg text-slate-100 font-medium">
+                                        ${job.salary}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Experience */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
-                        >
-                            <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                                <Briefcase size={20} className="text-purple-400" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm text-slate-400 mb-1">Required Experience</p>
-                                <p className="text-lg text-slate-100 font-medium">
-                                    {singleJob?.experience} years
-                                </p>
-                            </div>
-                        </motion.div>
+                        {job?.experience !== undefined && job?.experience !== null && (
+                            <motion.div
+                                variants={itemVariants}
+                                className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
+                            >
+                                <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                    <Briefcase size={20} className="text-purple-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm text-slate-400 mb-1">Required Experience</p>
+                                    <p className="text-lg text-slate-100 font-medium">
+                                        {job.experience} years
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Posted Date */}
-                        <motion.div
-                            variants={itemVariants}
-                            className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
-                        >
-                            <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
-                                <Calendar size={20} className="text-orange-400" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm text-slate-400 mb-1">Posted Date</p>
-                                <p className="text-lg text-slate-100 font-medium">
-                                    {singleJob?.createdAt?.split("T")[0]}
-                                </p>
-                            </div>
-                        </motion.div>
+                        {job?.createdAt && (
+                            <motion.div
+                                variants={itemVariants}
+                                className="flex items-start gap-4 pb-6 border-b border-white/10 last:border-b-0"
+                            >
+                                <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                                    <Calendar size={20} className="text-orange-400" />
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm text-slate-400 mb-1">Posted Date</p>
+                                    <p className="text-lg text-slate-100 font-medium">
+                                        {new Date(job.createdAt).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        )}
 
                         {/* Applicants */}
                         <motion.div
@@ -310,7 +414,7 @@ const JobDescription = () => {
                             <div className="flex-1">
                                 <p className="text-sm text-slate-400 mb-1">Total Applicants</p>
                                 <p className="text-lg text-slate-100 font-medium">
-                                    {singleJob?.applications?.length || 0}
+                                    {job?.applications?.length || 0}
                                 </p>
                             </div>
                         </motion.div>
@@ -319,7 +423,7 @@ const JobDescription = () => {
                 </motion.div>
 
                 {/* DESCRIPTION */}
-                {singleJob?.description && (
+                {job?.description && (
                     <motion.div
                         variants={itemVariants}
                         className="backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/5 border border-white/10 rounded-2xl p-6 md:p-8 mb-6"
@@ -328,7 +432,22 @@ const JobDescription = () => {
                             About This Role
                         </h2>
                         <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {singleJob.description}
+                            {job.description}
+                        </p>
+                    </motion.div>
+                )}
+
+                {/* REQUIREMENTS */}
+                {job?.requirements && (
+                    <motion.div
+                        variants={itemVariants}
+                        className="backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/5 border border-white/10 rounded-2xl p-6 md:p-8 mb-6"
+                    >
+                        <h2 className="text-2xl font-bold text-slate-100 mb-4">
+                            Requirements
+                        </h2>
+                        <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            {job.requirements}
                         </p>
                     </motion.div>
                 )}
@@ -342,7 +461,7 @@ const JobDescription = () => {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={isApplied ? undefined : applyJobHandler}
-                        disabled={isApplied || loading}
+                        disabled={isApplied || applying}
                         className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                             isApplied
                                 ? 'bg-green-500/20 text-green-300 border border-green-500/30 cursor-default'
@@ -354,10 +473,13 @@ const JobDescription = () => {
                                 <CheckCircle size={18} />
                                 Already Applied
                             </>
-                        ) : (
+                        ) : applying ? (
                             <>
-                                {loading ? 'Applying...' : 'Apply Now'}
+                                <Loader size={18} className="animate-spin" />
+                                Applying...
                             </>
+                        ) : (
+                            'Apply Now'
                         )}
                     </motion.button>
                 </motion.div>
