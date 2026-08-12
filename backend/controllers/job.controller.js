@@ -1,7 +1,6 @@
 import { Job } from "../models/job.model.js";
 import mongoose from "mongoose";
 import { Company } from "../models/company.model.js";
-import { Application } from "../models/application.model.js";
 
  //ADMIN: Post a new job
  
