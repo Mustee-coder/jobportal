@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import {  useState  } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
@@ -166,7 +166,7 @@ const PremiumCompanyCreate = () => {
                         </motion.div>
 
                         <p className='text-xs text-slate-500 mt-2'>
-                            This is the official name of your company. Make sure it's accurate.
+                            This is the official name of your company. Make sure it&apos;s accurate.
                         </p>
 
                     </motion.div>
@@ -233,7 +233,7 @@ const PremiumCompanyCreate = () => {
                         </li>
                         <li className='flex items-start gap-2'>
                             <span className='text-indigo-400 font-bold mt-0.5'>•</span>
-                            <span>You'll be able to edit company details and upload a logo</span>
+                         <span>You&apos;ll be able to edit company details and upload a logo</span>
                         </li>
                         <li className='flex items-start gap-2'>
                             <span className='text-indigo-400 font-bold mt-0.5'>•</span>

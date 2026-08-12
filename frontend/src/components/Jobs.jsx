@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from './shared/Navbar'
 import FilterCard from './FilterCard'
 import Job from './Job'
 import { useSelector } from 'react-redux'
-import { Search, Briefcase, Loader } from 'lucide-react'
+import { Search, Briefcase } from 'lucide-react'
 
-const PremiumJobs = () => {
+const Jobs = () => {
     const { allJobs = [], searchedQuery, loading } = useSelector(store => store.job);
     const [filterJobs, setFilterJobs] = useState(allJobs);
 
@@ -179,4 +179,4 @@ const PremiumJobs = () => {
     )
 }
 
-export default PremiumJobs
+export default Jobs

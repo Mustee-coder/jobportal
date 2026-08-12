@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import {
     Carousel,
@@ -10,7 +9,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setSearchedQuery } from '@/redux/jobSlice';
-import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import {Sparkles } from 'lucide-react';
 
 const category = [
     "Frontend Developer",

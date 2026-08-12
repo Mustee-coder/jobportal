@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import {  useEffect, useState  } from 'react'
 import { motion } from 'framer-motion'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { Label } from './ui/label'

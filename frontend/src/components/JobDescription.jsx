@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import {  useEffect, useState  } from 'react'
 import { motion } from 'framer-motion'
-import { Badge } from './ui/badge'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant'

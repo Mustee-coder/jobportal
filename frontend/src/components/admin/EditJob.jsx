@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import {  useEffect, useState  } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
@@ -73,7 +73,7 @@ const PremiumEditJob = () => {
     }
 
     fetchJob()
-  }, [params.id])
+  }, [params.id, navigate])
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value })

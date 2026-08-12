@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import {  useEffect, useState  } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight, Loader2, Upload } from 'lucide-react';
 import Navbar from '../shared/Navbar';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { USER_API_END_POINT } from '@/utils/constant';
 import { toast } from 'sonner';

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import {  useEffect  } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from './shared/Navbar'
 import Job from './Job'
@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setSearchedQuery } from '@/redux/jobSlice'
 import useGetAllJobs from '@/hooks/useGetAllJobs'
 import JobSkeleton from './JobSkeleton'
-import { Search, Filter } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 const Browse = () => {
     useGetAllJobs();
@@ -110,7 +110,7 @@ const Browse = () => {
                             No Jobs Found
                         </h3>
                         <p className='text-slate-400 max-w-md mx-auto'>
-                            We couldn't find any jobs matching your search. Try adjusting your filters or search terms.
+                            We couldn&apos;t find any jobs matching your search.
                         </p>
                     </motion.div>
                 )}

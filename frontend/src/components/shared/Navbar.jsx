@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import {  useState, useEffect  } from 'react';
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
@@ -10,7 +10,7 @@ import {
   PopoverContent,
 } from "../ui/popover";
 
-import { Menu, X, User2, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, User2, LogOut } from "lucide-react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "@/redux/authSlice";

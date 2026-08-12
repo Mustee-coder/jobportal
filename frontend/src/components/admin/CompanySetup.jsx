@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import {  useEffect, useState  } from 'react'
 import { motion } from 'framer-motion'
 import Navbar from '../shared/Navbar'
 import { ArrowLeft, Loader2, Building2, FileText, Globe, MapPin, Upload } from 'lucide-react'

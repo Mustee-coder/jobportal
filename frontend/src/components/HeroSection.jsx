@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import {  useState  } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Sparkles } from 'lucide-react';
 import { useDispatch } from 'react-redux';
@@ -146,7 +146,7 @@ const HeroSection = () => {
             className='flex flex-wrap justify-center gap-2 sm:gap-3 mt-6'
           >
             <span className='text-sm text-slate-500'>Try: </span>
-            {['Frontend Developer', 'Remote Jobs', 'Internship'].map((tag, idx) => (
+            {['Frontend Developer', 'Remote Jobs', 'Internship'].map((tag) => (
               <motion.button
                 key={tag}
                 whileHover={{ scale: 1.05 }}

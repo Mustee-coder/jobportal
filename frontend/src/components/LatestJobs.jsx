@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import LatestJobCards from './LatestJobCards'
 import { useSelector } from 'react-redux'
@@ -96,7 +95,7 @@ const LatestJobs = () => {
                             </div>
                         </motion.div>
                     ) : (
-                        allJobs?.slice(0, 6).map((job, index) => (
+                        allJobs?.slice(0, 6).map((job) => (
                             <motion.div
                                 key={job._id}
                                 variants={itemVariants}
