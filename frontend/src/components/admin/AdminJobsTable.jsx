@@ -1,208 +1,127 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from '../ui/table'
-import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { Edit, Trash2, Eye, MoreHorizontal } from 'lucide-react'
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Edit2, Eye, MoreHorizontal, Briefcase } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-const PremiumAdminJobsTable = () => {
+const AdminJobsTable = () => {
+    const { allAdminJobs, searchJobByText } = useSelector(store => store.job);
+    const [filterJobs, setFilterJobs] = useState(allAdminJobs);
     const navigate = useNavigate();
-    const { allAdminJobs = [], searchJobByText } = useSelector(store => store.job);
-    const [expandedId, setExpandedId] = useState(null);
 
-    // Filter jobs based on search
-    const filteredJobs = allAdminJobs.filter(job =>
-        job?.title?.toLowerCase().includes(searchJobByText?.toLowerCase()) ||
-        job?.position?.toString().includes(searchJobByText)
+    useEffect(() => {
+        const filteredJobs = allAdminJobs?.filter((job) => {
+            if (!searchJobByText) return true;
+            return (
+                job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) ||
+                job?.company?.name?.toLowerCase().includes(searchJobByText.toLowerCase())
+            );
+        });
+        setFilterJobs(filteredJobs);
+    }, [allAdminJobs, searchJobByText]);
+
+    if (!filterJobs || filterJobs.length === 0) {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-16 backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl"
+            >
+                <Briefcase size={48} className="text-slate-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-300 mb-2">No Jobs Posted</h3>
+                <p className="text-slate-400">Post your first job to get started</p>
+            </motion.div>
+        );
+    }
+
+    const ActionMenu = ({ job }) => (
+        <Popover>
+            <PopoverTrigger asChild>
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                    <MoreHorizontal size={16} className="text-slate-400 hover:text-slate-300" />
+                </motion.button>
+            </PopoverTrigger>
+            <PopoverContent className="w-40 backdrop-blur-xl bg-slate-900/95 border border-white/20 rounded-lg p-2 space-y-1">
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(`/admin/jobs/${job._id}/edit`)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-indigo-500/20 text-slate-200 hover:text-indigo-300 cursor-pointer transition-colors"
+                >
+                    <Edit2 size={14} />
+                    <span className="text-sm font-medium">Edit</span>
+                </motion.div>
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(`/admin/jobs/${job._id}/applicants`)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-green-500/20 text-slate-200 hover:text-green-300 cursor-pointer transition-colors"
+                >
+                    <Eye size={14} />
+                    <span className="text-sm font-medium">Applicants</span>
+                </motion.div>
+            </PopoverContent>
+        </Popover>
     );
 
-    // Animation variants
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.05,
-                delayChildren: 0.1,
-            },
-        },
-    };
-
-    const rowVariants = {
-        hidden: { opacity: 0, x: -20 },
-        visible: {
-            opacity: 1,
-            x: 0,
-            transition: { duration: 0.4, ease: 'easeOut' },
-        },
-        hover: {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            transition: { duration: 0.2 },
-        },
-    };
-
     return (
-        <motion.div
-            className="w-full"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
 
-            <Table>
+            {/* MOBILE: Card layout */}
+            <div className="md:hidden space-y-3">
+                {filterJobs.map((job, index) => (
+                    <motion.div
+                        key={job._id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4"
+                    >
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-slate-100 font-medium truncate">{job?.title}</p>
+                                <p className="text-slate-400 text-xs mt-0.5 truncate">{job?.company?.name}</p>
+                                <p className="text-slate-500 text-xs mt-1">{job?.createdAt?.split('T')[0]}</p>
+                            </div>
+                            <ActionMenu job={job} />
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
 
-                <TableCaption className="text-slate-400 py-4">
-                    {filteredJobs?.length === 0
-                        ? "No job postings yet"
-                        : `Showing ${filteredJobs?.length} job${filteredJobs?.length !== 1 ? 's' : ''}`
-                    }
-                </TableCaption>
+            {/* DESKTOP: Table layout */}
+            <div className="hidden md:block backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-white/5 border-b border-white/10">
+                    <div className="col-span-4 text-xs font-semibold text-slate-300 uppercase tracking-wide">Company Name</div>
+                    <div className="col-span-4 text-xs font-semibold text-slate-300 uppercase tracking-wide">Role</div>
+                    <div className="col-span-2 text-xs font-semibold text-slate-300 uppercase tracking-wide">Date</div>
+                    <div className="col-span-2 text-xs font-semibold text-slate-300 uppercase tracking-wide text-right">Action</div>
+                </div>
 
-                <TableHeader>
-                    <TableRow className="border-b border-white/10 hover:bg-transparent">
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Job Title
-                        </TableHead>
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Positions
-                        </TableHead>
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Applicants
-                        </TableHead>
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Posted
-                        </TableHead>
-                        <TableHead className="text-right text-slate-300 font-semibold py-4">
-                            Actions
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-
-                <TableBody>
-
-                    {filteredJobs?.length === 0 ? (
-                        <motion.tr
-                            variants={rowVariants}
-                            className="border-b border-white/10"
+                <div className="divide-y divide-white/5">
+                    {filterJobs.map((job, index) => (
+                        <motion.div
+                            key={job._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-white/5 transition-all items-center"
                         >
-                            <TableCell
-                                colSpan={5}
-                                className="text-center py-12"
-                            >
-                                <div className="flex flex-col items-center gap-3">
-                                    <div className="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                                        <Eye className="text-indigo-400" size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-300 font-medium">
-                                            No Jobs Posted Yet
-                                        </p>
-                                        <p className="text-slate-500 text-sm mt-1">
-                                            Create your first job posting to get started
-                                        </p>
-                                    </div>
-                                </div>
-                            </TableCell>
-                        </motion.tr>
-                    ) : (
-                        <motion.tbody
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="divide-y divide-white/10"
-                        >
-                            {filteredJobs.map((job) => (
-                                <motion.tr
-                                    key={job._id}
-                                    variants={rowVariants}
-                                    whileHover="hover"
-                                    className="border-b border-white/10 transition-colors duration-300 group"
-                                >
-
-                                    {/* Job Title */}
-                                    <TableCell className="text-slate-100 py-4 font-medium group-hover:text-indigo-300 transition-colors">
-                                        <motion.div
-                                            whileHover={{ x: 4 }}
-                                            className="inline-block cursor-pointer"
-                                        >
-                                            {job?.title}
-                                        </motion.div>
-                                    </TableCell>
-
-                                    {/* Positions */}
-                                    <TableCell className="text-slate-300 py-4 group-hover:text-slate-100 transition-colors">
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-300 text-sm font-semibold"
-                                        >
-                                            {job?.position}
-                                        </motion.div>
-                                    </TableCell>
-
-                                    {/* Applicants */}
-                                    <TableCell className="text-slate-300 py-4 group-hover:text-slate-100 transition-colors">
-                                        <motion.div
-                                            whileHover={{ scale: 1.1 }}
-                                            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-500/20 text-green-300 text-sm font-semibold"
-                                        >
-                                            {job?.applications?.length || 0}
-                                        </motion.div>
-                                    </TableCell>
-
-                                    {/* Posted Date */}
-                                    <TableCell className="text-slate-400 py-4 text-sm group-hover:text-slate-300 transition-colors">
-                                        {job?.createdAt?.split("T")[0]}
-                                    </TableCell>
-
-                                    {/* Actions */}
-                                    <TableCell className="text-right py-4">
-                                        <motion.div
-                                            className="flex items-center justify-end gap-2"
-                                            initial={{ opacity: 0 }}
-                                            whileHover={{ opacity: 1 }}
-                                        >
-                                            {/* Edit Button */}
-                                            <motion.button
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => navigate(`/admin/jobs/${job._id}`)}
-                                                className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
-                                                title="Edit job"
-                                            >
-                                                <Edit size={16} />
-                                            </motion.button>
-
-                                            {/* Delete Button */}
-                                            <motion.button
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                                                title="Delete job"
-                                            >
-                                                <Trash2 size={16} />
-                                            </motion.button>
-                                        </motion.div>
-                                    </TableCell>
-
-                                </motion.tr>
-                            ))}
-                        </motion.tbody>
-                    )}
-
-                </TableBody>
-
-            </Table>
-
+                            <div className="col-span-4"><p className="text-slate-100 font-medium truncate">{job?.company?.name}</p></div>
+                            <div className="col-span-4"><p className="text-slate-300 truncate">{job?.title}</p></div>
+                            <div className="col-span-2"><p className="text-slate-400 text-sm">{job?.createdAt?.split('T')[0]}</p></div>
+                            <div className="col-span-2 flex justify-end"><ActionMenu job={job} /></div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
         </motion.div>
-    )
-}
+    );
+};
 
-export default PremiumAdminJobsTable
+export default AdminJobsTable;

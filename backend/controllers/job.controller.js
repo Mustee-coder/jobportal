@@ -103,11 +103,6 @@ export const postJob = async (req, res) => {
     });
 
   } catch (error) {
-  console.error("========== CREATE JOB ERROR ==========");
-  console.error(error);
-  console.error("MESSAGE:", error.message);
-  console.error("STACK:", error.stack);
-  console.error("======================================");
 
   return res.status(500).json({
     message: error.message || "Internal server error.",

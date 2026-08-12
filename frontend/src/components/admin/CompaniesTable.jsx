@@ -1,211 +1,134 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from '../ui/table'
-import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { Edit, Trash2, Globe } from 'lucide-react'
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Edit2, MoreHorizontal, Building2 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-const PremiumCompaniesTable = () => {
+const CompaniesTable = () => {
+    const { companies, searchCompanyByText } = useSelector(store => store.company);
+    const [filterCompany, setFilterCompany] = useState(companies);
     const navigate = useNavigate();
-    const { companies = [], searchCompanyByText } = useSelector(store => store.company);
 
-    // Filter companies based on search
-    const filteredCompanies = companies.filter(company =>
-        company?.name?.toLowerCase().includes(searchCompanyByText?.toLowerCase())
+    useEffect(() => {
+        const filteredCompany = companies?.filter((company) => {
+            if (!searchCompanyByText) return true;
+            return company?.name?.toLowerCase().includes(searchCompanyByText.toLowerCase());
+        });
+        setFilterCompany(filteredCompany);
+    }, [companies, searchCompanyByText]);
+
+    if (!filterCompany || filterCompany.length === 0) {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-16 backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl"
+            >
+                <Building2 size={48} className="text-slate-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-300 mb-2">No Companies Found</h3>
+                <p className="text-slate-400">Register your first company to get started</p>
+            </motion.div>
+        );
+    }
+
+    const ActionMenu = ({ company }) => (
+        <Popover>
+            <PopoverTrigger asChild>
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                    <MoreHorizontal size={16} className="text-slate-400 hover:text-slate-300" />
+                </motion.button>
+            </PopoverTrigger>
+            <PopoverContent className="w-40 backdrop-blur-xl bg-slate-900/95 border border-white/20 rounded-lg p-2">
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => navigate(`/admin/companies/${company._id}`)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-indigo-500/20 text-slate-200 hover:text-indigo-300 cursor-pointer transition-colors"
+                >
+                    <Edit2 size={14} />
+                    <span className="text-sm font-medium">Edit</span>
+                </motion.div>
+            </PopoverContent>
+        </Popover>
     );
 
-    // Animation variants
-    const containerVariants = {
-        hidden: { opacity: 0 },
-        visible: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.05,
-                delayChildren: 0.1,
-            },
-        },
-    };
-
-    const rowVariants = {
-        hidden: { opacity: 0, x: -20 },
-        visible: {
-            opacity: 1,
-            x: 0,
-            transition: { duration: 0.4, ease: 'easeOut' },
-        },
-        hover: {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            transition: { duration: 0.2 },
-        },
-    };
+    const Logo = ({ company }) => (
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center border border-white/10 flex-shrink-0">
+            {company.logo ? (
+                <img src={company.logo} alt={company.name} className="w-full h-full object-cover" />
+            ) : (
+                <span className="text-white font-bold text-sm">
+                    {company.name?.charAt(0).toUpperCase()}
+                </span>
+            )}
+        </div>
+    );
 
     return (
         <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             className="w-full"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
         >
-
-            <Table>
-
-                <TableCaption className="text-slate-400 py-4">
-                    {filteredCompanies?.length === 0
-                        ? "No companies yet"
-                        : `Showing ${filteredCompanies?.length} compan${filteredCompanies?.length !== 1 ? 'ies' : 'y'}`
-                    }
-                </TableCaption>
-
-                <TableHeader>
-                    <TableRow className="border-b border-white/10 hover:bg-transparent">
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Company Name
-                        </TableHead>
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Location
-                        </TableHead>
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Website
-                        </TableHead>
-                        <TableHead className="text-slate-300 font-semibold py-4">
-                            Founded
-                        </TableHead>
-                        <TableHead className="text-right text-slate-300 font-semibold py-4">
-                            Actions
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-
-                <TableBody>
-
-                    {filteredCompanies?.length === 0 ? (
-                        <motion.tr
-                            variants={rowVariants}
-                            className="border-b border-white/10"
-                        >
-                            <TableCell
-                                colSpan={5}
-                                className="text-center py-12"
-                            >
-                                <div className="flex flex-col items-center gap-3">
-                                    <div className="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                                        <Globe className="text-indigo-400" size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-slate-300 font-medium">
-                                            No Companies Yet
-                                        </p>
-                                        <p className="text-slate-500 text-sm mt-1">
-                                            Register your first company to get started
-                                        </p>
-                                    </div>
+            {/* MOBILE: Card layout (below md) */}
+            <div className="md:hidden space-y-3">
+                {filterCompany.map((company, index) => (
+                    <motion.div
+                        key={company._id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4"
+                    >
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <Logo company={company} />
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-slate-100 font-medium truncate">{company.name}</p>
+                                    <p className="text-slate-400 text-xs mt-0.5">
+                                        {company.createdAt?.split('T')[0]}
+                                    </p>
                                 </div>
-                            </TableCell>
-                        </motion.tr>
-                    ) : (
-                        <motion.tbody
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="divide-y divide-white/10"
+                            </div>
+                            <ActionMenu company={company} />
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* DESKTOP: Table layout (md and up) */}
+            <div className="hidden md:block backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-white/5 border-b border-white/10">
+                    <div className="col-span-2 text-xs font-semibold text-slate-300 uppercase tracking-wide">Logo</div>
+                    <div className="col-span-5 text-xs font-semibold text-slate-300 uppercase tracking-wide">Name</div>
+                    <div className="col-span-3 text-xs font-semibold text-slate-300 uppercase tracking-wide">Date</div>
+                    <div className="col-span-2 text-xs font-semibold text-slate-300 uppercase tracking-wide text-right">Action</div>
+                </div>
+
+                <div className="divide-y divide-white/5">
+                    {filterCompany.map((company, index) => (
+                        <motion.div
+                            key={company._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-white/5 transition-all items-center"
                         >
-                            {filteredCompanies.map((company) => (
-                                <motion.tr
-                                    key={company._id}
-                                    variants={rowVariants}
-                                    whileHover="hover"
-                                    className="border-b border-white/10 transition-colors duration-300 group"
-                                >
-
-                                    {/* Company Name */}
-                                    <TableCell className="text-slate-100 py-4 font-medium group-hover:text-indigo-300 transition-colors">
-                                        <motion.div
-                                            whileHover={{ x: 4 }}
-                                            className="inline-block cursor-pointer flex items-center gap-2"
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                                                <Globe size={14} className="text-indigo-400" />
-                                            </div>
-                                            {company?.name}
-                                        </motion.div>
-                                    </TableCell>
-
-                                    {/* Location */}
-                                    <TableCell className="text-slate-300 py-4 group-hover:text-slate-100 transition-colors">
-                                        {company?.location || "N/A"}
-                                    </TableCell>
-
-                                    {/* Website */}
-                                    <TableCell className="text-slate-300 py-4 group-hover:text-slate-100 transition-colors">
-                                        {company?.website ? (
-                                            <motion.a
-                                                whileHover={{ x: 2 }}
-                                                href={company.website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-indigo-400 hover:text-indigo-300 transition-colors text-sm truncate"
-                                            >
-                                                {company.website}
-                                            </motion.a>
-                                        ) : (
-                                            <span className="text-slate-500">—</span>
-                                        )}
-                                    </TableCell>
-
-                                    {/* Created Date */}
-                                    <TableCell className="text-slate-400 py-4 text-sm group-hover:text-slate-300 transition-colors">
-                                        {company?.createdAt?.split("T")[0]}
-                                    </TableCell>
-
-                                    {/* Actions */}
-                                    <TableCell className="text-right py-4">
-                                        <motion.div
-                                            className="flex items-center justify-end gap-2"
-                                            initial={{ opacity: 0 }}
-                                            whileHover={{ opacity: 1 }}
-                                        >
-                                            {/* Edit Button */}
-                                            <motion.button
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => navigate(`/admin/companies/${company._id}`)}
-                                                className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
-                                                title="Edit company"
-                                            >
-                                                <Edit size={16} />
-                                            </motion.button>
-
-                                            {/* Delete Button */}
-                                            <motion.button
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
-                                                title="Delete company"
-                                            >
-                                                <Trash2 size={16} />
-                                            </motion.button>
-                                        </motion.div>
-                                    </TableCell>
-
-                                </motion.tr>
-                            ))}
-                        </motion.tbody>
-                    )}
-
-                </TableBody>
-
-            </Table>
-
+                            <div className="col-span-2"><Logo company={company} /></div>
+                            <div className="col-span-5"><p className="text-slate-100 font-medium truncate">{company.name}</p></div>
+                            <div className="col-span-3"><p className="text-slate-400 text-sm">{company.createdAt?.split('T')[0]}</p></div>
+                            <div className="col-span-2 flex justify-end"><ActionMenu company={company} /></div>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
         </motion.div>
-    )
-}
+    );
+};
 
-export default PremiumCompaniesTable
+export default CompaniesTable;
