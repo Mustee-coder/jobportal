@@ -389,14 +389,7 @@ Future improvements may include:
 [ ] Job recommendations
 [ ] Pagination and advanced search
 📸 Screenshots
-Add screenshots here to showcase the application.
-docs/
-└── screenshots/
-    ├── home.png
-    ├── jobs.png
-    ├── job-details.png
-    ├── recruiter-dashboard.png
-    └── applicants.png
+
 👨‍💻 Author
 Mujittapha Magaji (Muji)
 Full-Stack / MERN Developer focused on building modern, scalable web applications.
