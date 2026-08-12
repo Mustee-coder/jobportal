@@ -2,6 +2,7 @@ import {  useState  } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Briefcase, DollarSign, Bookmark, Heart, ArrowRight } from 'lucide-react'
+import PropTypes from "prop-types";
 
 const Job = ({ job }) => {
     const navigate = useNavigate();
@@ -149,5 +150,23 @@ const Job = ({ job }) => {
         </motion.div>
     )
 }
+
+Job.propTypes = {
+  job: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string,
+    company: PropTypes.shape({
+      name: PropTypes.string,
+    }),
+    location: PropTypes.string,
+    jobType: PropTypes.string,
+    salary: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+    ]),
+    description: PropTypes.string,
+    requirements: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+};
 
 export default Job
