@@ -226,6 +226,7 @@ export const getAdminJobs = async (req, res) => {
 
 // ADMIN: Update an existing job
 
+
 export const updateJob = async (req, res) => {
   try {
     const jobId = req.params.id;
@@ -308,11 +309,13 @@ export const updateJob = async (req, res) => {
     if (location?.trim()) job.location = location.trim();
     if (jobType?.trim()) job.jobType = jobType.trim();
 
-    if (requirements?.trim()) {
-      job.requirements = requirements
-        .split(",")
-        .map((item) => item.trim())
-        .filter(Boolean);
+    if (requirements) {
+      job.requirements = Array.isArray(requirements)
+        ? requirements.map((item) => item.trim()).filter(Boolean)
+        : requirements
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
     }
 
     // Update company if changed

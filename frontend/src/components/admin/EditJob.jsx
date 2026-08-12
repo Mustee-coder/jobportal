@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2, Briefcase, FileText, MapPin, DollarSign, Users, Clock, Building2, ArrowLeft } from 'lucide-react'
 
-const EditJob = () => {
+const PremiumEditJob = () => {
   const params = useParams()
   const navigate = useNavigate()
 
@@ -53,7 +53,9 @@ const EditJob = () => {
           setInput({
             title: job.title || "",
             description: job.description || "",
-            requirements: job.requirements || "",
+            requirements: Array.isArray(job.requirements) 
+              ? job.requirements.join(", ") 
+              : job.requirements || "",
             salary: job.salary || "",
             location: job.location || "",
             jobType: job.jobType || "",
@@ -506,4 +508,4 @@ const PremiumTextArea = ({ label, icon: Icon, name, input, onChange, placeholder
   )
 }
 
-export default EditJob
+export default PremiumEditJob
