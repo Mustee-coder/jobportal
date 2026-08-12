@@ -1,0 +1,33 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="briefcaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+
+  <!-- Subtle border glow -->
+  <rect x="4" y="4" width="504" height="504" rx="108" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+
+  <!-- Briefcase icon -->
+  <g transform="translate(256,256)">
+    <!-- Handle -->
+    <rect x="-48" y="-118" width="96" height="48" rx="16" fill="none" stroke="url(#briefcaseGrad)" stroke-width="18"/>
+
+    <!-- Body -->
+    <rect x="-140" y="-60" width="280" height="200" rx="28" fill="url(#briefcaseGrad)"/>
+
+    <!-- Middle divider line -->
+    <rect x="-140" y="18" width="280" height="10" fill="#0f172a" opacity="0.35"/>
+
+    <!-- Center latch -->
+    <rect x="-28" y="2" width="56" height="40" rx="10" fill="#0f172a" opacity="0.55"/>
+  </g>
+</svg>
