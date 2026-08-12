@@ -221,3 +221,126 @@ export const getAdminJobs = async (req, res) => {
     });
   }
 };
+
+
+
+// ADMIN: Update an existing job
+
+export const updateJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(jobId)) {
+      return res.status(400).json({
+        message: "Invalid Job ID",
+        success: false,
+      });
+    }
+
+    const {
+      title,
+      description,
+      requirements,
+      salary,
+      location,
+      jobType,
+      experience,
+      position,
+      companyId,
+    } = req.body;
+
+    // Find existing job
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({
+        message: "Job not found.",
+        success: false,
+      });
+    }
+
+    // Optional: verify the logged-in admin owns this job
+    const userId = req.id;
+    if (job.created_by.toString() !== userId) {
+      return res.status(403).json({
+        message: "You are not authorized to update this job.",
+        success: false,
+      });
+    }
+
+    // Validate + convert numeric fields if provided
+    if (salary !== undefined) {
+      const parsedSalary = Number(salary);
+      if (Number.isNaN(parsedSalary) || parsedSalary <= 0) {
+        return res.status(400).json({
+          message: "Salary must be greater than 0.",
+          success: false,
+        });
+      }
+      job.salary = parsedSalary;
+    }
+
+    if (experience !== undefined) {
+      const parsedExperience = Number(experience);
+      if (Number.isNaN(parsedExperience) || parsedExperience < 0) {
+        return res.status(400).json({
+          message: "Invalid experience.",
+          success: false,
+        });
+      }
+      job.experienceLevel = parsedExperience;
+    }
+
+    if (position !== undefined) {
+      const parsedPosition = Number(position);
+      if (Number.isNaN(parsedPosition) || parsedPosition <= 0) {
+        return res.status(400).json({
+          message: "Number of positions must be greater than 0.",
+          success: false,
+        });
+      }
+      job.position = parsedPosition;
+    }
+
+    // Update text fields if provided
+    if (title?.trim()) job.title = title.trim();
+    if (description?.trim()) job.description = description.trim();
+    if (location?.trim()) job.location = location.trim();
+    if (jobType?.trim()) job.jobType = jobType.trim();
+
+    if (requirements?.trim()) {
+      job.requirements = requirements
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    // Update company if changed
+    if (companyId?.trim()) {
+      const company = await Company.findById(companyId);
+      if (!company) {
+        return res.status(404).json({
+          message: "Company not found.",
+          success: false,
+        });
+      }
+      job.company = companyId;
+    }
+
+    await job.save();
+
+    return res.status(200).json({
+      message: "Job updated successfully.",
+      job,
+      success: true,
+    });
+
+  } catch (error) {
+    console.error("Update Job Error:", error);
+
+    return res.status(500).json({
+      message: error.message || "Internal server error.",
+      success: false,
+    });
+  }
+};
